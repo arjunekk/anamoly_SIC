@@ -43,11 +43,11 @@ export default function History() {
   return (
     <div className="p-8 max-w-4xl">
       <h1
-        className="text-2xl font-medium text-neutral-900 dark:text-neutral-50 mb-6 tracking-tight"
-        style={{ fontFamily: "var(--font-display)" }}
-      >
-        History <span className="text-neutral-400 dark:text-neutral-500 font-normal">({inspections.length})</span>
-      </h1>
+  className="text-2xl font-bold text-neutral-900 dark:text-neutral-50 mb-6 tracking-tight"
+  style={{ fontFamily: "var(--font-title)" }}
+>
+  History. <span className="text-neutral-400 dark:text-neutral-500 font-normal">({inspections.length})</span>
+</h1>
 
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden">
         <table className="w-full text-sm text-left">

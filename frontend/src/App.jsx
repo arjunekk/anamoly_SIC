@@ -27,13 +27,20 @@ function InspectionPage() {
   }
 
   return (
-    <div className="flex flex-col items-center py-10 px-6">
+    <div className="flex flex-col items-center py-16 px-6">
       <h1
-        className="text-2xl font-medium text-neutral-900 dark:text-neutral-50 mb-8 tracking-tight"
-        style={{ fontFamily: "var(--font-display)" }}
-      >
-        Inspect
-      </h1>
+  className="text-5xl font-bold text-neutral-900 dark:text-neutral-50 tracking-tight mb-3"
+  style={{ fontFamily: "var(--font-title)" }}
+>
+  anomaly.
+</h1>
+<p
+  className="text-base text-neutral-500 dark:text-neutral-400 mb-10 text-center max-w-md"
+  style={{ fontFamily: "var(--font-subtitle)" }}
+>
+  Industrial Defect Detection & Maintenance Recommendation System
+</p>
+
       <ImageUpload onSubmit={handleSubmit} isLoading={isLoading} />
       {error && (
         <p className="mt-4 text-sm text-red-600 dark:text-red-400">Error: {error}</p>
@@ -46,7 +53,7 @@ function InspectionPage() {
 function App() {
   return (
     <BrowserRouter>
-      <div className="flex min-h-screen bg-white dark:bg-neutral-950 transition-colors">
+      <div className="flex min-h-screen transition-colors">
         <Sidebar />
         <div className="flex-1 overflow-auto">
           <Routes>

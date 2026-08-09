@@ -42,7 +42,7 @@ export default function Sidebar() {
           className="text-sm font-medium text-neutral-900 dark:text-neutral-50 tracking-tight"
           style={{ fontFamily: "var(--font-display)" }}
         >
-          Anomaly
+          anomaly
         </span>
       </div>
 

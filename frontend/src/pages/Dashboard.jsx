@@ -45,11 +45,11 @@ export default function Dashboard() {
   return (
     <div className="p-8 max-w-4xl">
       <h1
-        className="text-2xl font-medium text-neutral-900 dark:text-neutral-50 mb-6 tracking-tight"
-        style={{ fontFamily: "var(--font-display)" }}
-      >
-        Dashboard
-      </h1>
+  className="text-2xl font-bold text-neutral-900 dark:text-neutral-50 mb-6 tracking-tight"
+  style={{ fontFamily: "var(--font-title)" }}
+>
+  Dashboard.
+</h1>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total inspections" value={stats.total_inspections} />

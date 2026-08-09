@@ -5,8 +5,21 @@
   --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+  --bg-app: #FAF9F6;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-title: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-subtitle: 'EB Garamond', Garamond, serif;
+  --bg-app: #FAF9F6;
+}
+
+
+.dark {
+  --bg-app: #121214;
 }
 
 body {
   font-family: var(--font-body);
+  background-color: var(--bg-app);
 }
