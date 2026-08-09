@@ -41,7 +41,7 @@ export default function History() {
   }
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-8">
       <h1
   className="text-2xl font-bold text-neutral-900 dark:text-neutral-50 mb-6 tracking-tight"
   style={{ fontFamily: "var(--font-title)" }}

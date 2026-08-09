@@ -29,7 +29,7 @@ function InspectionPage() {
   return (
     <div className="flex flex-col items-center py-16 px-6">
       <h1
-  className="text-5xl font-bold text-neutral-900 dark:text-neutral-50 tracking-tight mb-3"
+  className="text-8xl font-bold text-neutral-900 dark:text-neutral-50 tracking-tight mb-3"
   style={{ fontFamily: "var(--font-title)" }}
 >
   anomaly.

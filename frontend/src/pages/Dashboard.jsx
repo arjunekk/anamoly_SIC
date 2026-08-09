@@ -43,7 +43,7 @@ export default function Dashboard() {
   const { stats, recent_inspections, score_trend } = data;
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-8">
       <h1
   className="text-2xl font-bold text-neutral-900 dark:text-neutral-50 mb-6 tracking-tight"
   style={{ fontFamily: "var(--font-title)" }}
@@ -51,7 +51,7 @@ export default function Dashboard() {
   Dashboard.
 </h1>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4 mb-6">
         <StatCard label="Total inspections" value={stats.total_inspections} />
         <StatCard label="Defect rate" value={`${stats.defect_rate}%`} />
         <StatCard label="Avg anomaly score" value={stats.average_anomaly_score} />

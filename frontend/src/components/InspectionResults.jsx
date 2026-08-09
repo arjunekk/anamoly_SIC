@@ -30,7 +30,7 @@ export default function InspectionResults({ result }) {
   const severity = SEVERITY_CONFIG[result.severity] || SEVERITY_CONFIG.none;
 
   return (
-    <div className="mt-8 w-full max-w-3xl flex gap-5">
+    <div className="mt-8 w-full max-w-5xl flex gap-5">
       <div className="flex-[1.5] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-3">
         <p className="text-[11px] tracking-wide uppercase text-neutral-400 dark:text-neutral-500 mb-2 px-1">
           Heatmap
