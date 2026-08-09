@@ -27,3 +27,5 @@ reportlab
 # Testing (Phase 15)
 pytest
 httpx
+
+python-multipart
