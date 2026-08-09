@@ -61,7 +61,7 @@ export default function InspectionResults({ result }) {
           </div>
         </div>
 
-        
+        <a
           href={`http://127.0.0.1:8000/inspections/${result.id}/report`}
           target="_blank"
           rel="noopener noreferrer"
