@@ -1,15 +1,8 @@
-# Industrial Defect Detection & Maintenance Recommendation System
+# anomaly.
 
-An end-to-end AI system that simulates automated visual inspection in a
-manufacturing environment. Detects product defects, localizes them via
-anomaly heatmaps, estimates severity, generates maintenance recommendations,
-stores inspection history, visualizes results on a dashboard, and generates
-downloadable PDF inspection reports.
+Industrial Defect Detection & Maintenance Recommendation System — an end-to-end AI system that simulates automated visual inspection in a manufacturing environment. Detects product defects, localizes them via anomaly heatmaps, estimates severity, generates maintenance recommendations, stores inspection history, visualizes results on a dashboard, and generates downloadable PDF inspection reports.
 
-Supports **all 15 MVTec AD categories**, with per-category calibrated
-detection models and severity thresholds. Backed by a full automated test
-suite and a rigorous evaluation pipeline (AUROC, confusion matrix,
-precision/recall/F1, pixel-level localization).
+Supports **all 15 MVTec AD categories**, with per-category calibrated detection models and severity thresholds. Backed by a full automated test suite, a rigorous evaluation pipeline (AUROC, confusion matrix, precision/recall/F1, pixel-level localization), and containerized deployment via Docker Compose.
 
 ---
 
@@ -17,147 +10,108 @@ precision/recall/F1, pixel-level localization).
 
 - **AI/ML:** PyTorch, Torchvision, OpenCV, WideResNet50-2 (pretrained feature extractor), PatchCore (anomaly detection), scikit-learn (evaluation metrics)
 - **Backend:** FastAPI, SQLAlchemy, Alembic, ReportLab
-- **Frontend:** React (Vite), Tailwind CSS, React Router
+- **Frontend:** React (Vite), Tailwind CSS v4, React Router
 - **Database:** PostgreSQL
-- **Testing:** pytest, httpx (FastAPI TestClient integration tests)
+- **Testing:** pytest, httpx
+- **Deployment:** Docker, Docker Compose, nginx
 
 ---
 
 ## Project Status
 
-✅ Working end-to-end:
+✅ Complete:
 - Image upload → category-specific AI inference → anomaly heatmap
-- **All 15 MVTec AD categories supported**, each with its own PatchCore memory bank
-- Severity estimation — bottle uses manually-reviewed thresholds (Phase 8); all other categories use automated percentile-based calibration (see `docs/calibration_notes_all_categories.md`)
+- All 15 MVTec AD categories, each with its own PatchCore memory bank
+- Severity estimation — bottle manually calibrated (Phase 8); all other categories automated (percentile-based, 95th-percentile ceiling)
 - Rule-based maintenance recommendations
-- Results persisted to PostgreSQL, with category tracked per inspection
-- **Dashboard** — aggregate statistics across all inspections
-- **Inspection History page** — full, browsable table of every past inspection
-- **Downloadable PDF inspection reports**
-- **Automated test suite** — 26 pytest tests, including category-aware threshold tests
-- **Full evaluation suite** — AUROC, precision/recall/F1, confusion matrices, and pixel-level localization AUROC computed across all 15 categories (see `docs/evaluation_report.md`)
+- Results persisted to PostgreSQL, category tracked per inspection
+- Dashboard with aggregate statistics
+- Inspection History (full table, all records)
+- Downloadable PDF inspection reports
+- Automated test suite — 26 pytest tests
+- Full evaluation suite across all 15 categories (AUROC, precision/recall/F1, confusion matrices, pixel-level localization)
+- **Redesigned frontend** — sidebar navigation, dark/light mode, custom typography (Helvetica-style titles, Garamond subtitle, Space Grotesk display, JetBrains Mono numerals)
+- **Docker Compose deployment** — Postgres, FastAPI backend, and nginx-served frontend, fully containerized with persistent volumes
 
-🚧 In progress / planned:
-- Frontend visual polish
-- Basic security hardening (auth, upload limits, rate limiting)
-- Deployment
+🚧 Not yet done:
+- Basic security hardening (auth, upload limits, rate limiting) — required before any public-facing deployment
+- Public cloud hosting (current deployment is local Docker Compose only)
 
 ---
 
 ## Dataset
 
-This project uses the [MVTec AD dataset](https://www.mvtec.com/company/research/datasets/mvtec-ad)
-(registration required). Place each category folder at:
+[MVTec AD dataset](https://www.mvtec.com/company/research/datasets/mvtec-ad) (registration required). Place each category folder at `dataset/mvtec_ad/<category>/`.
 
-```
-dataset/mvtec_ad/<category>/
-```
-
-Supported categories: `bottle`, `cable`, `capsule`, `carpet`, `grid`,
-`hazelnut`, `leather`, `metal_nut`, `pill`, `screw`, `tile`, `toothbrush`,
-`transistor`, `wood`, `zipper`.
-
-Expected structure per category:
-```
-dataset/mvtec_ad/<category>/
-├── train/good/
-├── test/{good, <defect_types>}/
-└── ground_truth/{<defect_types>}/
-```
-
-The system works with a partial set of categories too — `get_available_categories()` only loads what's actually present on disk, so you don't need all 15 downloaded to run the app.
+Supported: `bottle`, `cable`, `capsule`, `carpet`, `grid`, `hazelnut`, `leather`, `metal_nut`, `pill`, `screw`, `tile`, `toothbrush`, `transistor`, `wood`, `zipper`.
 
 ---
 
-## Setup
+## Running the App
 
-### 1. Backend
+### Option A — Docker Compose (recommended, one command)
 
+Requires Docker Desktop installed and running.
+
+1. Create a root `.env` file:
+   ```
+   POSTGRES_PASSWORD=your_chosen_password
+   ```
+2. Ensure `models/` (memory banks) and `dataset/mvtec_ad/<category>/` (at least for categories you want available) exist on disk.
+3. Run:
+   ```bash
+   docker compose up
+   ```
+4. Frontend: `http://localhost:3000`. Backend: `http://localhost:8000` (docs at `/docs`).
+
+First run downloads the pretrained WideResNet50-2 weights once (cached in a persistent volume afterward). Data persists across `docker compose down` / `up` cycles via named volumes.
+
+### Option B — Local dev servers (no Docker)
+
+**Backend:**
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate        # Windows Git Bash: source .venv/Scripts/activate
+source .venv/bin/activate
 pip install -r backend/requirements.txt
 ```
-
 Create `backend/.env`:
 ```
 DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/defect_detection
 ```
-
-### 2. Database
-
 ```bash
 psql -U postgres -h localhost -c "CREATE DATABASE defect_detection;"
-cd backend
-alembic upgrade head
-```
-
-### 3. Build memory banks
-
-Build a memory bank for every available category:
-```bash
-PYTHONPATH=backend python backend/scripts/build_all_memory_banks.py
-```
-
-Or build/rebuild a single category with a custom subsample ratio:
-```bash
-PYTHONPATH=backend python backend/scripts/build_memory_bank_for_category.py <category> <ratio>
-```
-
-### 4. Calibrate severity thresholds
-
-```bash
-PYTHONPATH=backend python backend/scripts/calibrate_all_categories.py
-```
-
-Or recalibrate specific categories only:
-```bash
-PYTHONPATH=backend python backend/scripts/calibrate_all_categories.py <category1> <category2>
-```
-
-Note: `bottle` always uses its original Phase 8 manually-reviewed thresholds regardless of what this script computes — see `severity_estimator.py`.
-
-### 5. Run the backend
-
-```bash
+cd backend && alembic upgrade head
 PYTHONPATH=backend uvicorn main:app --reload --app-dir backend
 ```
 
-Runs at `http://127.0.0.1:8000`. Interactive API docs at `/docs`. Startup logs show which categories' models loaded successfully.
-
-### 6. Run the frontend
-
+**Frontend:**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+Runs at `http://localhost:5173`.
 
-Runs at `http://localhost:5173`. The Inspect page includes a category dropdown populated from whichever categories are actually loaded.
-
-### 7. Run the test suite
-
+**Build memory banks / calibrate / evaluate (needed once, or after adding categories):**
 ```bash
-cd backend
-pytest -v
-pytest -v -m "not slow"    # fast pass, skips model-loading tests
-```
-
-### 8. Run the evaluation suite
-
-```bash
+PYTHONPATH=backend python backend/scripts/build_all_memory_banks.py
+PYTHONPATH=backend python backend/scripts/calibrate_all_categories.py
 PYTHONPATH=backend python backend/scripts/evaluate_all_categories.py
 ```
 
-Outputs `docs/evaluation_results.json` (raw) and `docs/evaluation_report.md` (human-readable, with confusion matrices).
+**Tests:**
+```bash
+cd backend
+pytest -v
+```
 
 ---
 
 ## Application Pages
 
-- **Inspect** (`/`) — select a category, upload an image, view anomaly score, severity, heatmap, recommendations, and download a PDF report
+- **Inspect** (`/`) — large centered hero, category dropdown, upload, results with heatmap/score/severity/recommendations, PDF download
 - **Dashboard** (`/dashboard`) — aggregate stats across all categories
-- **History** (`/history`) — full table of every past inspection with per-row PDF report download
+- **History** (`/history`) — full table of every past inspection
 
 ---
 
@@ -165,25 +119,23 @@ Outputs `docs/evaluation_results.json` (raw) and `docs/evaluation_report.md` (hu
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/health` | Basic health check |
-| GET | `/categories` | List categories with a currently loaded model |
-| POST | `/inspect` | Upload an image + category, run full inspection pipeline |
+| GET | `/health` | Health check |
+| GET | `/categories` | Categories with a currently loaded model |
+| POST | `/inspect` | Upload image + category, run inspection |
 | GET | `/inspections` | List all past inspections |
-| GET | `/dashboard` | Aggregate statistics, recent inspections, score trend |
-| GET | `/inspections/{id}/report` | Generate and download a PDF report for one inspection |
-
-Full interactive docs available at `http://127.0.0.1:8000/docs` once the backend is running.
+| GET | `/dashboard` | Aggregate stats, recent inspections, score trend |
+| GET | `/inspections/{id}/report` | PDF report for one inspection |
 
 ---
 
 ## Evaluation Results (Summary)
 
-Full results across all 15 categories are in `docs/evaluation_report.md`. Headline findings:
+Full results in `docs/evaluation_report.md`. Headline findings:
 
-- **Structural-defect categories perform near-perfectly**: bottle, leather, hazelnut, carpet, metal_nut, and wood all achieve AUROC ≥ 0.98 and recall ≥ 0.90.
-- **Subtle textural/print-defect categories are harder**: capsule, screw, toothbrush, and grid show lower AUROC (0.76–0.93) — consistent with published PatchCore benchmarks, where these categories are known to be more difficult.
-- **A real calibration bug was found and fixed during evaluation**: the initial automated threshold script used the raw maximum good-image score as the "no defect" ceiling, which was highly sensitive to single outlier images and caused severe recall collapse in several categories (e.g. capsule recall was 0.009 before the fix). Switching to a 95th-percentile-based ceiling substantially recovered recall system-wide with no meaningful loss in precision. See `docs/evaluation_report.md` for before/after detail.
-- **A targeted memory-bank-richness experiment produced mixed results**: increasing the subsample ratio (0.1→0.25) for the four weakest categories helped capsule substantially, was neutral for toothbrush, and actually made grid and screw's recall worse — evidence that "more reference data" isn't a universal fix and that texture-heavy, self-similar categories can be hurt by an overly broad definition of "normal." Documented in `docs/evaluation_report.md`.
+- **Structural-defect categories perform near-perfectly**: bottle, leather, hazelnut, carpet, metal_nut, wood — AUROC ≥ 0.98, recall ≥ 0.90.
+- **Subtle textural/print-defect categories are harder**: capsule, screw, toothbrush, grid — AUROC 0.76–0.93, consistent with published PatchCore benchmarks.
+- **A real calibration bug was found and fixed during evaluation**: the initial automated threshold used the raw max good-image score, which was outlier-sensitive and caused severe recall collapse (e.g. capsule recall was 0.009). Switched to a 95th-percentile ceiling — recovered recall system-wide with no meaningful precision loss.
+- **A targeted memory-bank-richness experiment produced mixed, documented results**: increasing subsample ratio (0.1→0.25) helped capsule substantially, was neutral for toothbrush, and made grid/screw's recall slightly worse — kept anyway, prioritizing capsule's larger gain. Evidence that "more reference data" isn't universally better.
 
 ---
 
@@ -192,40 +144,24 @@ Full results across all 15 categories are in `docs/evaluation_report.md`. Headli
 ```
 anamoly_detection/
 ├── backend/
-│   ├── app/
-│   │   ├── api/                 # FastAPI routes: inspection, history, dashboard, reports, categories
-│   │   ├── core/                # config, categories registry, severity_thresholds.json
-│   │   ├── preprocessing/       # image transforms, dataset loader, dataloader
-│   │   ├── feature_extraction/  # WideResNet50-2 wrapper
-│   │   ├── anomaly_detection/   # patch aggregation, memory bank, PatchCore, inference, heatmaps
-│   │   ├── severity/            # per-category calibrated severity estimation
-│   │   ├── recommendation/      # rule-based recommendation engine
-│   │   ├── reports/             # PDF report generation (ReportLab)
-│   │   ├── evaluation/          # AUROC/precision/recall/F1/pixel-level metrics
-│   │   ├── db/                  # SQLAlchemy models, session, repository
-│   │   └── utils/
-│   ├── scripts/                 # build_all_memory_banks, build_memory_bank_for_category,
-│   │                             #   calibrate_all_categories, evaluate_all_categories
-│   ├── alembic/                 # database migrations
-│   ├── tests/                   # pytest test suite (26 tests) + conftest.py fixtures
-│   ├── pytest.ini
+│   ├── app/                  # api, core, preprocessing, feature_extraction,
+│   │                          # anomaly_detection, severity, recommendation,
+│   │                          # reports, evaluation, db
+│   ├── scripts/              # build/calibrate/evaluate automation
+│   ├── alembic/
+│   ├── tests/                # 26 pytest tests
+│   ├── Dockerfile
+│   ├── entrypoint.sh
 │   └── main.py
-│
-├── frontend/                    # React + Vite + Tailwind + React Router
-│   └── src/
-│       ├── api/                 # backend API client functions
-│       ├── components/          # ImageUpload (with category dropdown), InspectionResults
-│       └── pages/               # Dashboard, History
-│
-├── models/                      # trained PatchCore memory banks, one per category (gitignored)
-├── dataset/                     # MVTec AD data, all categories (gitignored)
-├── reports/                     # generated heatmaps, uploads, PDF reports (gitignored)
-├── docs/
-│   ├── architecture.md
-│   ├── calibration_notes.md                  # bottle's original manual calibration (Phase 8)
-│   ├── calibration_notes_all_categories.md   # automated calibration, all categories
-│   ├── evaluation_results.json               # raw evaluation metrics
-│   └── evaluation_report.md                  # human-readable evaluation report
+├── frontend/
+│   ├── src/                  # api, components, pages, hooks
+│   ├── Dockerfile
+│   └── nginx.conf
+├── models/                   # per-category memory banks (gitignored)
+├── dataset/                  # MVTec AD, all categories (gitignored)
+├── reports/                  # uploads, heatmaps, generated PDFs (gitignored)
+├── docs/                     # architecture, calibration notes, evaluation report
+├── docker-compose.yml
 └── README.md
 ```
 
@@ -233,11 +169,10 @@ anamoly_detection/
 
 ## Known Limitations
 
-- Currently, only `bottle`'s severity thresholds were manually reviewed and discussed in depth; all other categories use automated percentile-based calibration, which is faster to scale but less individually scrutinized.
-- Some categories (capsule, screw, toothbrush, grid) have meaningfully lower detection performance than others — a genuine model/data limitation for subtle, textural defects, not a bug. Documented with real before/after evidence in `docs/evaluation_report.md`.
-- The memory-bank-richness experiment intentionally left grid and screw with slightly worse recall than their original 0.1-subsample versions — a deliberate trade-off favoring capsule's larger gain, documented rather than silently accepted.
-- Pixel-level AUROC uses a per-image-averaged approximation, not the exact pooled-pixel method used in the original PatchCore paper — numbers are informative but not directly comparable to published benchmarks.
-- PatchCore's memory bank uses random subsampling rather than greedy coreset selection.
-- Integration tests run against the real `defect_detection` database rather than an isolated test database.
-- No authentication, upload size limits, or rate limiting yet — required before any public deployment.
-- PDF reports are regenerated on every request rather than cached.
+- Only `bottle`'s thresholds were manually reviewed in depth; all others use automated percentile calibration.
+- Capsule, screw, toothbrush, grid have lower detection performance — a genuine, documented model limitation for subtle defects, not a bug.
+- Grid and screw's recall was knowingly left slightly regressed after a memory-bank-richness experiment, in favor of capsule's larger gain.
+- Pixel-level AUROC uses a per-image-averaged approximation, not the paper's exact pooled-pixel method.
+- Integration tests run against the real database, not an isolated test database.
+- No authentication, upload limits, or rate limiting — required before any public deployment.
+- Docker deployment is local-only; no cloud hosting configured yet.
