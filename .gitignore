@@ -1,8 +1,10 @@
 # Python
 venv/
+.venv/
 __pycache__/
 *.pyc
 .env
+backend/.env
 
 # Datasets (too large for git, documented separately in README)
 dataset/mvtec_ad/*
@@ -12,9 +14,16 @@ dataset/mvtec_ad/*
 models/*
 !models/.gitkeep
 
-# Generated reports
+# Generated reports (uploads, heatmaps, PDF reports)
 reports/*
 !reports/.gitkeep
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+
+# pytest
+.pytest_cache/
 
 # IDE
 .vscode/
@@ -23,6 +32,5 @@ reports/*
 # OS
 .DS_Store
 
-# DB
-.env
-backend/.env
+# Docker
+docker-compose.override.yml
