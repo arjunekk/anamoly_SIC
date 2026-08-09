@@ -35,7 +35,7 @@ function InspectionPage() {
   anomaly.
 </h1>
 <p
-  className="text-base text-neutral-500 dark:text-neutral-400 mb-10 text-center max-w-md"
+  className="text-3xl text-neutral-500 dark:text-neutral-400 mb-10 text-center"
   style={{ fontFamily: "var(--font-subtitle)" }}
 >
   Industrial Defect Detection & Maintenance Recommendation System
